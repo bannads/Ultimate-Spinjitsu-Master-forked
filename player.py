@@ -13,7 +13,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.vel_x = 0
         self.vel_y = 0
-        self.vel_factor = 1.0
         self.jump_power = -12
         self.dash_cooldown = 0
         self.on_ground = False
@@ -37,10 +36,10 @@ class Player(pygame.sprite.Sprite):
         # Dash
         if keys[self.controls['dash']] and self.dash_cooldown == 0 and keys[self.controls['jump']]:
             self.vel_y = self.jump_power  # dash power for horizontal
-            self.dash_cooldown = 30  # Cooldown for half a second (30 frames)
-        # Update Dash Cooldown
+            self.dash_cooldown = 30  # Cooldown for a half second (30 frames)
+
         if self.dash_cooldown > 0:
-            self.dash_cooldown -= 1
+            self.dash_cooldown -= 1;
         
         # Jump
         if keys[self.controls['jump']]:
@@ -53,8 +52,8 @@ class Player(pygame.sprite.Sprite):
             self.vel_y += 0.5  # Regular gravity
 
         # Update position
-        self.rect.x += self.vel_x * self.vel_factor
-        self.rect.y += self.vel_y * self.vel_factor
+        self.rect.x += self.vel_x
+        self.rect.y += self.vel_y
 
         # Prevent from going out of the screen
         self.rect.x = max(0, min(self.rect.x, screen_width - self.player_width))
