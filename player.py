@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.vel_x = 0
         self.vel_y = 0
+        self.vel_factor = 1.0
         self.jump_power = -12
         self.dash_cooldown = 0
         self.on_ground = False
@@ -52,8 +53,8 @@ class Player(pygame.sprite.Sprite):
             self.vel_y += 0.5  # Regular gravity
 
         # Update position
-        self.rect.x += self.vel_x
-        self.rect.y += self.vel_y
+        self.rect.x += self.vel_x * self.vel_factor
+        self.rect.y += self.vel_y * self.vel_factor
 
         # Prevent from going out of the screen
         self.rect.x = max(0, min(self.rect.x, screen_width - self.player_width))
