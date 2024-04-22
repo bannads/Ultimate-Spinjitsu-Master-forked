@@ -1,6 +1,6 @@
 import pygame
 import sys
-import os
+from os.path import normcase
 from player import Player
 from platform_1 import Platform
 
@@ -22,43 +22,30 @@ BLUE = (0, 0, 255)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 FONT_SIZE = 36
-BACKGROUND = pygame.image.load("assets/background_enhanced.jpg")
+BACKGROUND = pygame.image.load(normcase("assets/background_enhanced.jpg"))
 lives = 5  # Number of lives for each player
 winner_text = ""
 FPS = 60
 PLATFORM_COLOR = (215, 113, 101)
 
-# Assets directory
-ASSETS_DIR = "assets"
-BACKGROUND_IMAGE = "background_enhanced.jpg"
-PLAYER_IMAGE_RED = "red_player.jpg"
-PLAYER_IMAGE_GREEN = "green_player.jpg"
-RELOAD_BOX_IMAGE = "reload_box.png"
-EMPTY_BOX_IMAGE = "empty_box.png"
-BULLET_HIT_SOUND_FILE = "086553_bullet-hit-39853.mp3"
-BULLET_FIRE_SOUND_FILE = "desert-eagle-gunshot-14622.mp3"
-RELOAD_SOUND_FILE = "revolvercock1-6924.mp3"
-NO_AMMO_SOUND_FILE = "empty-gun-shot-6209.mp3"
-MAIN_GAME_MUSIC_FILE = "wii-shop-channel-background-music-hd.mp3"
-MAIN_MENU_MUSIC_FILE = "gaming-background-music-hd.mp3"
-
 # bullets
 MAX_BULLETS = 5
 BULLET_VEL = 20
+BULLET_VEL_FACTOR = 1.0
 player1_bullets = []
 player2_bullets = []
 player1_ammo = MAX_BULLETS
 player2_ammo = MAX_BULLETS
 
 # bullet sounds
-BULLET_HIT_SOUND = pygame.mixer.Sound(os.path.join(ASSETS_DIR, BULLET_HIT_SOUND_FILE))
-BULLET_FIRE_SOUND = pygame.mixer.Sound(os.path.join(ASSETS_DIR, BULLET_FIRE_SOUND_FILE))
-RELOAD_SOUND = pygame.mixer.Sound(os.path.join(ASSETS_DIR, RELOAD_SOUND_FILE))
-NO_AMMO_SOUND = pygame.mixer.Sound(os.path.join(ASSETS_DIR, NO_AMMO_SOUND_FILE))
+BULLET_HIT_SOUND = pygame.mixer.Sound(normcase("assets/086553_bullet-hit-39853.mp3"))
+BULLET_FIRE_SOUND = pygame.mixer.Sound(normcase("assets/desert-eagle-gunshot-14622.mp3"))
+RELOAD_SOUND = pygame.mixer.Sound(normcase("assets/revolvercock1-6924.mp3"))
+NO_AMMO_SOUND = pygame.mixer.Sound(normcase("assets/empty-gun-shot-6209.mp3"))
 
 # background music
-main_game_music = pygame.mixer.Sound(os.path.join(ASSETS_DIR, MAIN_GAME_MUSIC_FILE))
-main_menu_music = pygame.mixer.Sound(os.path.join(ASSETS_DIR, MAIN_MENU_MUSIC_FILE))
+main_game_music = pygame.mixer.Sound(normcase('assets/wii-shop-channel-background-music-hd.mp3'))
+main_menu_music = pygame.mixer.Sound(normcase('assets/gaming-background-music-hd.mp3'))
 
 PLAYER_1_HIT = pygame.USEREVENT + 1
 PLAYER_2_HIT = pygame.USEREVENT + 2
@@ -105,9 +92,9 @@ clock = pygame.time.Clock()
 game_active = False
 
 def main_menu():
-    main_game_music.stop()
-    main_menu_music.play(-1)
-    main_menu_music.set_volume(0.25)
+    # main_game_music.stop()
+    # main_menu_music.play(-1)
+    # main_menu_music.set_volume(0.25)
     
     global player1_ammo
     global player2_ammo
@@ -149,9 +136,9 @@ def handle_bullets():
     for bullet in player1_bullets:
         pygame.draw.rect(screen, 'red', bullet)
         if player2.rect.center > player1.rect.center:
-            bullet.x += BULLET_VEL
+            bullet.x += BULLET_VEL * BULLET_VEL_FACTOR
         else:
-            bullet.x -= BULLET_VEL
+            bullet.x -= BULLET_VEL * BULLET_VEL_FACTOR
         if bullet.colliderect(player2.rect):
             player1_bullets.remove(bullet)
             pygame.event.post(pygame.event.Event(PLAYER_2_HIT))
@@ -162,9 +149,9 @@ def handle_bullets():
     for bullet in player2_bullets:
         pygame.draw.rect(screen, 'green', bullet)
         if player1.rect.center < player2.rect.center:
-            bullet.x -= BULLET_VEL
+            bullet.x -= BULLET_VEL * BULLET_VEL_FACTOR
         else:
-            bullet.x += BULLET_VEL
+            bullet.x += BULLET_VEL * BULLET_VEL_FACTOR
         if bullet.colliderect(player1.rect):
             player2_bullets.remove(bullet)
             pygame.event.post(pygame.event.Event(PLAYER_1_HIT))
@@ -173,9 +160,9 @@ def handle_bullets():
 
 # Main game loop
 def main():
-    main_menu_music.stop()
-    main_game_music.play(-1)
-    main_game_music.set_volume(0.25)
+    # main_menu_music.stop()
+    # main_game_music.play(-1)
+    # main_game_music.set_volume(0.25)
     # Reset player positions
     global player1_ammo
     global player2_ammo
@@ -229,13 +216,23 @@ def main():
                 BULLET_HIT_SOUND.play()
         
         FPS = 60
+        global BULLET_VEL_FACTOR
+        BULLET_VEL_FACTOR = 1.0
+        player1.vel_factor = 1.0
+        player2.vel_factor = 1.0
+        player1.jump_power = -12
+        player2.jump_power = -12
         for bullet in player1_bullets:
             if bullet.colliderect(player2.slow_motion_zone):
-                FPS = 20
+                BULLET_VEL_FACTOR  = 0.2 #!! TODO just reduce the bullet speed? FIXME make the collide zone a circle, maybe highlight it with some color
+                player2.vel_factor = 0.2
+                player2.jump_power = -24
         
         for bullet in player2_bullets:
             if bullet.colliderect(player1.slow_motion_zone):
-                FPS = 20
+                BULLET_VEL_FACTOR = 0.2
+                player1.vel_factor = 0.2
+                player1.jump_power = -24
         
         # ammo box reload
         left_dummy_timer += 1

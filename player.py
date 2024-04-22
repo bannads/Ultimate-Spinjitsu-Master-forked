@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.vel_x = 0
         self.vel_y = 0
+        self.vel_factor = 1.0
         self.jump_power = -12
         self.dash_cooldown = 0
         self.on_ground = False
@@ -23,9 +24,11 @@ class Player(pygame.sprite.Sprite):
         self.BULLET_VEL = 20
         self.bullets = []
         self.slow_motion_zone = pygame.Rect(x, y, player_width * 7, player_height * 7)
+        
 
-    def handle_movement(self, screen_width, screen_height):
+    def update(self, platforms, screen_width, screen_height):
         keys = pygame.key.get_pressed()
+        self.slow_motion_zone.center = self.rect.center
         # Movement
         self.vel_x = 0
         if keys[self.controls['left']]:
@@ -36,11 +39,8 @@ class Player(pygame.sprite.Sprite):
         # Dash
         if keys[self.controls['dash']] and self.dash_cooldown == 0 and keys[self.controls['jump']]:
             self.vel_y = self.jump_power  # dash power for horizontal
-            self.dash_cooldown = 30  # Cooldown for a half second (30 frames)
+            self.dash_cooldown = 60  # Cooldown for a second (60 frames)
 
-        if self.dash_cooldown > 0:
-            self.dash_cooldown -= 1;
-        
         # Jump
         if keys[self.controls['jump']]:
             if self.on_ground:
@@ -52,14 +52,9 @@ class Player(pygame.sprite.Sprite):
             self.vel_y += 0.5  # Regular gravity
 
         # Update position
-        self.rect.x += self.vel_x
-        self.rect.y += self.vel_y
+        self.rect.x += self.vel_x * self.vel_factor
+        self.rect.y += self.vel_y * self.vel_factor
 
-        # Prevent from going out of the screen
-        self.rect.x = max(0, min(self.rect.x, screen_width - self.player_width))
-        self.rect.y = max(0, min(self.rect.y, screen_height - self.player_height))
-
-    def handle_collision(self, platforms):
         # Collision with platforms
         self.on_ground = False
         for platform in platforms:
@@ -71,7 +66,8 @@ class Player(pygame.sprite.Sprite):
                 elif self.vel_y < 0:
                     self.rect.top = platform.rect.bottom
                     self.vel_y = 0
-
+                    
+        
         if self.rect.colliderect(self.opponent.rect):
             if self.vel_y > 0:
                 self.rect.bottom = self.opponent.rect.top
@@ -85,8 +81,15 @@ class Player(pygame.sprite.Sprite):
                 self.rect.right = self.opponent.rect.left
                 self.rect.left = self.opponent.rect.right
                 self.vel_x = 0
+            # elif self.vel_y < 0:
+            #     self.rect.top = self.opponent.rect.bottom
+            #     self.vel_y = 0
+            
 
-    def update(self, platforms, screen_width, screen_height):
-        self.slow_motion_zone.center = self.rect.center
-        self.handle_movement(screen_width, screen_height)
-        self.handle_collision(platforms)
+        # Prevent from going out of the screen
+        self.rect.x = max(0, min(self.rect.x, screen_width - self.player_width))
+        self.rect.y = max(0, min(self.rect.y, screen_height - self.player_height))
+
+        # Update dash cooldown
+        if self.dash_cooldown > 0:
+            self.dash_cooldown -= 1
