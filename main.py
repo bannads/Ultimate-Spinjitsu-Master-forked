@@ -92,9 +92,9 @@ clock = pygame.time.Clock()
 game_active = False
 
 def main_menu():
-    # main_game_music.stop()
-    # main_menu_music.play(-1)
-    # main_menu_music.set_volume(0.25)
+    main_game_music.stop()
+    main_menu_music.play(-1)
+    main_menu_music.set_volume(0.25)
     
     global player1_ammo
     global player2_ammo
